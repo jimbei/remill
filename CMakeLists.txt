@@ -401,20 +401,3 @@ add_custom_target(semantics)
 
 # tools
 add_subdirectory(bin)
-
-# tests
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
-  add_custom_target(test_dependencies)
-
-  if(NOT "${PLATFORM_NAME}" STREQUAL "windows")
-    if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-      message(STATUS "X86 tests enabled")
-      add_subdirectory(tests/X86)
-    endif()
-  endif()
-
-  if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND "${PLATFORM_NAME}" STREQUAL "linux")
-    message(STATUS "aarch64 tests enabled")
-    add_subdirectory(tests/AArch64)
-  endif()
-endif()
