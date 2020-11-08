@@ -228,8 +228,9 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (!FLAGS_entry_address) {
-    FLAGS_entry_address = FLAGS_address;
+  uint64_t EntryAddress = FLAGS_entry_address;
+  if (!EntryAddress) {
+    EntryAddress = FLAGS_address;
   }
 
   // Make sure `--address` and `--entry_address` are in-bounds for the target
@@ -244,9 +245,9 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (FLAGS_entry_address != (FLAGS_entry_address & addr_mask)) {
+  if (EntryAddress != (EntryAddress & addr_mask)) {
     std::cerr
-        << "Value " << std::hex << FLAGS_entry_address
+        << "Value " << std::hex << EntryAddress
         << " passed to --entry_address does not fit into 32-bits. Did mean"
         << " to specify a 64-bit architecture to --arch?" << std::endl;
     return EXIT_FAILURE;
@@ -265,7 +266,7 @@ int main(int argc, char *argv[]) {
 
   // Lift all discoverable traces starting from `--entry_address` into
   // `module`.
-  trace_lifter.Lift(FLAGS_entry_address);
+  trace_lifter.Lift(EntryAddress);
 
   // Optimize the module, but with a particular focus on only the functions
   // that we actually lifted.
@@ -288,7 +289,7 @@ int main(int argc, char *argv[]) {
   // This is a good JITing strategy: optimize the lifted code in the semantics
   // module, move it to a new module, instrument it there, then JIT compile it.
   for (auto &lifted_entry : manager.traces) {
-    if (lifted_entry.first == FLAGS_entry_address) {
+    if (lifted_entry.first == EntryAddress) {
       entry_trace = lifted_entry.second;
     }
     remill::MoveFunctionIntoModule(lifted_entry.second, &dest_module);
@@ -365,7 +366,7 @@ int main(int argc, char *argv[]) {
     // Store the program counter into the state.
     const auto pc_reg_ptr = pc_reg->AddressOf(state_ptr, entry);
     const auto trace_pc =
-        llvm::ConstantInt::get(pc_reg->type, FLAGS_entry_address, false);
+        llvm::ConstantInt::get(pc_reg->type, EntryAddress, false);
     ir.SetInsertPoint(entry);
     ir.CreateStore(trace_pc, pc_reg_ptr);
 
